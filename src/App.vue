@@ -127,7 +127,7 @@ export default {
     },
     getEvaluate() {
       axios
-        .post('http://localhost:8010/api/v1/soap-record-support/evaluate', {
+        .post('https://soap-record-support-server-fae3im6i6q-an.a.run.app/api/v1/soap-record-support/evaluate', {
           department: 'string',
           sex: 'string',
           age: 0,
@@ -149,7 +149,7 @@ export default {
   },
   mounted() {
     axios
-      .get('http://localhost:8010/api/v1/soap-record-support/feedback')
+      .get('https://soap-record-support-server-fae3im6i6q-an.a.run.app/api/v1/soap-record-support/feedback')
     // eslint-disable-next-line no-return-assign
       .then((response) => (
         this.feedback = response.data

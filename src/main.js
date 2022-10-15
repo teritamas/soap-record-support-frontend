@@ -5,7 +5,6 @@ import App from './App.vue';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './assets/css/select2.min.css'; // ここを追加
 // eslint-disable-next-line import/order
 import jQuery from 'jquery';
 

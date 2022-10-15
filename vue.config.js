@@ -7,7 +7,7 @@ module.exports = defineConfig({
 module.exports = {
   devServer: {
     proxy: {
-      'http://localhost:8010': {
+      'https://soap-record-support-server-fae3im6i6q-an.a.run.app': {
         target: 'http://localhost:8080',
       },
     },

@@ -10,14 +10,22 @@
         <div class="col-12 col-md-7">
             <h2><font-awesome-icon icon="fa-solid fa-clipboard" class="d-inline-block me-3 fa-clipboard" />看護記録</h2>
             <div class="my-2">
-                <span class="p-2">年齢：<input type="text" class="p-1 form-control d-inline" style="width: 30px;" pattern="^[0-9]+$" required>歳</span>
+                <span class="p-2">年齢：<input v-model="age" type="text" class="p-1 form-control d-inline" style="width: 30px;" pattern="^[0-9]+$" required>歳</span>
                 <span class="p-2">性別：
-                    <select name="" id="" required class="p-1 form-control d-inline" style="width: 50px">
-                        <option value="">男性</option>
-                        <option value="">女性</option>
+                    <select v-model="sex" name="" id="" required class="p-1 form-control d-inline" style="width: 50px">
+                        <option value="男性">男性</option>
+                        <option value="女性">女性</option>
                     </select>
                 </span>
-                <span class="p-2">病歴：喘息（完治）</span>
+                <span class="p-2">診療科：
+                    <select v-model="department" name="" id="" required class="p-1 form-control d-inline" style="width: 100px">
+                        <option value="内科">内科</option>
+                        <option value="外科">外科</option>
+                        <option value="小児科">小児科</option>
+                        <option value="産婦人科">産婦人科</option>
+                        <option value="精神科">精神科</option>
+                    </select>
+                </span>
             </div>
             <table class="soap-table">
                 <tr>
@@ -27,7 +35,7 @@
                     </th>
                     <td>
                         <label for="subjective"></label>
-                        <textarea v-model="subjective" class="suggest" type="textarea" name="subjective" autocomplete="on" list="food"/>
+                        <textarea v-model="subjective" class="suggest" type="textarea" name="subjective" />
                         <div v-if="evaluate.subjective">
                             <div v-for="subjective in evaluate.subjective" :key="subjective.index" :class="[subjective.score >= 0.5 ? 'score-good' : 'score-bad']">
                                 <font-awesome-icon v-if="subjective.score >= 0.5" icon="fa-regular fa-circle-check" class="fa-circle-check"/>
@@ -43,7 +51,7 @@
                 </th>
                 <td>
                     <label for="objective"></label>
-                    <textarea v-model="objective" class="suggest" type="textarea" name="objective" autocomplete="on" list="food"/>
+                    <textarea v-model="objective" class="suggest" type="textarea" name="objective" />
                     <div v-if="evaluate.objective">
                         <div v-for="objective in evaluate.objective" :key="objective.index" :class="[objective.score >= 0.5 ? 'score-good' : 'score-bad']">
                             <font-awesome-icon v-if="objective.score >= 0.5" icon="fa-regular fa-circle-check" class="fa-circle-check"/>
@@ -58,10 +66,11 @@
                         <small class="text-muted d-block">評価</small>
                     </th>
                     <td>
-                        <textarea v-model="assessment" class="suggest"  name="assessment" autocomplete="on" list="food" />
+                        <textarea v-model="assessment" class="suggest"  name="assessment" />
                         <div v-if="evaluate.recommendation" >
                             <font-awesome-icon @click="copyToClipboard(evaluate.recommendation.assessment)" icon="fa-regular fa-copy" data-bs-toggle="tooltip" data-bs-placement="top" :title="copy"/>
-                            {{ evaluate.recommendation.assessment }}</div>
+                            {{ evaluate.recommendation.assessment }}
+                        </div>
                     </td>
                 </tr>
                 <tr>
@@ -70,8 +79,11 @@
                     <small class="text-muted d-block">計画（治療）</small>
                 </th>
                 <td>
-                    <textarea v-if="evaluate.recommendation" class="suggest"  name="plan" autocomplete="on" list="food" :value="evaluate.recommendation.plan" />
-                    <textarea v-if="!evaluate.recommendation" class="suggest" ></textarea>
+                    <textarea v-model="plan" class="suggest" name="plan" />
+                    <div v-if="evaluate.recommendation" >
+                        <font-awesome-icon @click="copyToClipboard(evaluate.recommendation.plan)" icon="fa-regular fa-copy" data-bs-toggle="tooltip" data-bs-placement="top" :title="copy"/>
+                        {{ evaluate.recommendation.plan }}
+                    </div>
                 </td>
                 </tr>
             </table>
@@ -133,6 +145,9 @@ export default {
   },
   data() {
     return {
+      department: '内科',
+      sex: '男性',
+      age: '25',
       feedback: '',
       subjective: '',
       objective: '',
@@ -151,9 +166,9 @@ export default {
     getEvaluate() {
       axios
         .post('https://soap-record-support-server-fae3im6i6q-an.a.run.app/api/v1/soap-record-support/evaluate', {
-          department: 'string',
-          sex: 'string',
-          age: 0,
+          department: this.department,
+          sex: this.sex,
+          age: this.age,
           subjective: this.subjective,
           objective: this.objective,
         })
@@ -173,9 +188,9 @@ export default {
     postFeedback() {
       axios
         .post('https://soap-record-support-server-fae3im6i6q-an.a.run.app/api/v1/soap-record-support/feedback', {
-          department: 'string',
-          sex: 'string',
-          age: 0,
+          department: this.department,
+          sex: this.sex,
+          age: this.age,
           subjective: this.subjective,
           objective: this.objective,
           assessment: this.assessment,
@@ -210,7 +225,7 @@ export default {
       () => {
         this.show = false;
       },
-      5000,
+      10000,
     );
   },
 };

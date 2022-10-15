@@ -133,3 +133,4 @@ dist
 .pnp.*
 
 .node_version
+.firebase

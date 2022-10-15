@@ -14,6 +14,10 @@ import { faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { faUserNurse } from '@fortawesome/free-solid-svg-icons';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { faLine } from '@fortawesome/free-brands-svg-icons';
+import { faCircleCheck } from '@fortawesome/free-regular-svg-icons';
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faCopy } from '@fortawesome/free-regular-svg-icons';
+
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 global.jquery = jQuery;
@@ -26,6 +30,9 @@ library.add(faFileLines);
 library.add(faUserNurse);
 library.add(faMagnifyingGlass);
 library.add(faLine);
+library.add(faCircleCheck);
+library.add(faTriangleExclamation);
+library.add(faCopy);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 new Vue({

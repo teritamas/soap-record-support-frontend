@@ -10,20 +10,31 @@
         <div class="col-12 col-md-7">
             <h2><font-awesome-icon icon="fa-solid fa-clipboard" class="d-inline-block me-3 fa-clipboard" />看護記録</h2>
             <div class="my-2">
-                <span class="p-2">年齢：23歳</span>
-                <span class="p-2">性別：女性</span>
+                <span class="p-2">年齢：<input type="text" class="p-1 form-control d-inline" style="width: 30px;" pattern="^[0-9]+$" required>歳</span>
+                <span class="p-2">性別：
+                    <select name="" id="" required class="p-1 form-control d-inline" style="width: 50px">
+                        <option value="">男性</option>
+                        <option value="">女性</option>
+                    </select>
+                </span>
                 <span class="p-2">病歴：喘息（完治）</span>
             </div>
             <table class="soap-table">
                 <tr>
-                <th class="text-center border-top">
-                    Subjective
-                    <small class="text-muted d-block">主観的情報</small>
-                </th>
-                <td>
-                    <label for="subjective"></label>
-                    <textarea class="suggest" type="textarea" name="subjective" autocomplete="on" list="food"/>
-                </td>
+                    <th class="text-center border-top">
+                        Subjective
+                        <small class="text-muted d-block">主観的情報</small>
+                    </th>
+                    <td>
+                        <label for="subjective"></label>
+                        <textarea v-model="subjective" class="suggest" type="textarea" name="subjective" autocomplete="on" list="food"/>
+                        <div v-if="evaluate.subjective">
+                            <div v-for="subjective in evaluate.subjective" :key="subjective.index" :class="[subjective.score >= 0.5 ? 'score-good' : 'score-bad']">
+                                <font-awesome-icon v-if="subjective.score >= 0.5" icon="fa-regular fa-circle-check" class="fa-circle-check"/>
+                                <font-awesome-icon v-if="subjective.score < 0.5" icon="fa-solid fa-triangle-exclamation" class="a-triangle-exclamation"/>
+                                {{ subjective.input }}   <span :class="[subjective.score >= 0.5 ? 'text-primary' : 'text-danger']">{{ Math.round(subjective.score*100) }}%</span></div>
+                        </div>
+                    </td>
                 </tr>
                 <tr>
                     <th class="text-center">
@@ -32,7 +43,13 @@
                 </th>
                 <td>
                     <label for="objective"></label>
-                    <textarea class="suggest" type="textarea" name="objective" autocomplete="on" list="food"/>
+                    <textarea v-model="objective" class="suggest" type="textarea" name="objective" autocomplete="on" list="food"/>
+                    <div v-if="evaluate.objective">
+                        <div v-for="objective in evaluate.objective" :key="objective.index" :class="[objective.score >= 0.5 ? 'score-good' : 'score-bad']">
+                            <font-awesome-icon v-if="objective.score >= 0.5" icon="fa-regular fa-circle-check" class="fa-circle-check"/>
+                            <font-awesome-icon v-if="objective.score < 0.5" icon="fa-solid fa-triangle-exclamation" class="a-triangle-exclamation"/>
+                            {{ objective.input }}   <span :class="[objective.score >= 0.5 ? 'text-primary' : 'text-danger']">{{ Math.round(objective.score*100) }}%</span></div>
+                    </div>
                 </td>
                 </tr>
                 <tr>
@@ -41,8 +58,10 @@
                         <small class="text-muted d-block">評価</small>
                     </th>
                     <td>
-                        <textarea v-if="evaluate.recommendation" class="suggest"  name="Assessment" autocomplete="on" list="food" :value="evaluate.recommendation.assessment" />
-                        <textarea v-if="!evaluate.recommendation" class="suggest" ></textarea>
+                        <textarea v-model="assessment" class="suggest"  name="assessment" autocomplete="on" list="food" />
+                        <div v-if="evaluate.recommendation" >
+                            <font-awesome-icon @click="copyToClipboard(evaluate.recommendation.assessment)" icon="fa-regular fa-copy" data-bs-toggle="tooltip" data-bs-placement="top" :title="copy"/>
+                            {{ evaluate.recommendation.assessment }}</div>
                     </td>
                 </tr>
                 <tr>
@@ -51,14 +70,14 @@
                     <small class="text-muted d-block">計画（治療）</small>
                 </th>
                 <td>
-                    <textarea v-if="evaluate.recommendation" class="suggest"  name="Assessment" autocomplete="on" list="food" :value="evaluate.recommendation.plan" />
+                    <textarea v-if="evaluate.recommendation" class="suggest"  name="plan" autocomplete="on" list="food" :value="evaluate.recommendation.plan" />
                     <textarea v-if="!evaluate.recommendation" class="suggest" ></textarea>
                 </td>
                 </tr>
             </table>
             <div class="d-flex justify-content-between mt-3 mb-5">
-                <button class="btn btn-primary" @click=getEvaluate()><font-awesome-icon icon="fa-solid fa-magnifying-glass" class="me-2" />AP検索</button>
-                <button class="btn btn-primary" @click=getfeedback()><font-awesome-icon icon="fa-brands fa-line" class="me-2" />フィードバックをもらう</button>
+                <button class="btn btn-primary font-weight-bold" @click=getEvaluate()><font-awesome-icon icon="fa-solid fa-magnifying-glass" class="me-2" />SO採点・AP検索</button>
+                <button class="btn btn-primary font-weight-bold" @click=postFeedback()><font-awesome-icon icon="fa-brands fa-line" class="me-2" />フィードバックをもらう</button>
             </div>
         </div>
         <div class="col-12 col-md-5 mb-5">
@@ -95,7 +114,7 @@
       </div>
     </div>
     <div
-      class="flash alert alert-primary"
+      class="flash alert alert-primary position-fixed"
       v-if="show === true"
     >
     FBをLineで送信しました
@@ -115,10 +134,14 @@ export default {
   data() {
     return {
       feedback: '',
-      message: '',
+      subjective: '',
+      objective: '',
+      assessment: '',
+      plan: '',
       evaluate: '',
       show: false,
       isOpen: false,
+      copy: 'コピーします',
     };
   },
   methods: {
@@ -131,29 +154,54 @@ export default {
           department: 'string',
           sex: 'string',
           age: 0,
-          subjective: [
-            'string',
-          ],
-          objective: [
-            'string',
-          ],
+          subjective: this.subjective,
+          objective: this.objective,
         })
         // eslint-disable-next-line no-return-assign
         .then((response) => (
           this.evaluate = response.data
         ));
     },
-    getfeedback() {
+    getFeedback() {
+      axios
+        .get('https://soap-record-support-server-fae3im6i6q-an.a.run.app/api/v1/soap-record-support/feedback')
+      // eslint-disable-next-line no-return-assign
+        .then((response) => (
+          this.feedback = response.data
+        ));
+    },
+    postFeedback() {
+      axios
+        .post('https://soap-record-support-server-fae3im6i6q-an.a.run.app/api/v1/soap-record-support/feedback', {
+          department: 'string',
+          sex: 'string',
+          age: 0,
+          subjective: this.subjective,
+          objective: this.objective,
+          assessment: this.assessment,
+          plan: this.plan,
+        })
+        // eslint-disable-next-line no-return-assign
+        .then((response) => (
+          this.evaluate = response.data
+        ));
       this.show = true;
+    },
+    copyToClipboard(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          this.copy = 'コピーしました';
+        })
+        .catch((e) => {
+          console.error(e);
+        });
     },
   },
   mounted() {
-    axios
-      .get('https://soap-record-support-server-fae3im6i6q-an.a.run.app/api/v1/soap-record-support/feedback')
-    // eslint-disable-next-line no-return-assign
-      .then((response) => (
-        this.feedback = response.data
-      ));
+    setInterval(this.getFeedback(), 2000);
+    setInterval(() => {
+      this.getFeedback();
+    }, 5000);
   },
   // Vueインスタンスに変化があったら発動する
   updated() {
@@ -162,7 +210,7 @@ export default {
       () => {
         this.show = false;
       },
-      3000,
+      5000,
     );
   },
 };
@@ -188,14 +236,14 @@ export default {
   }
   .soap-table th{
     border-bottom:1px solid #e5e5e5;
-    height: 100px;
+    height: 80px;
     width: 65px;
     padding: 10px;
   }
   .suggest {
     width: 100%;
     border: none;
-    height: 100px;
+    height: 80px;
   }
   .flash {
     text-align: center;
@@ -233,6 +281,24 @@ iframe {
 }
 .fa-user-nurse {
     color: rgb(173, 43, 124);
+}
+.fa-triangle-exclamation {
+    color: red;
+    padding-left: 7px;
+    padding-right: 3px;
+}
+.fa-circle-check {
+    color: blue;
+    padding-left: 7px;
+    padding-right: 3px;
+}
 
+.score-good {
+    background: aliceblue;
+
+}
+
+.score-bad {
+    background: antiquewhite;
 }
 </style>

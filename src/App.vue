@@ -36,7 +36,7 @@
                     <td>
                         <label for="subjective"></label>
                         <textarea v-model="subjective" class="suggest" type="textarea" name="subjective" />
-                        <div v-if="evaluate.subjective">
+                        <div class="font-small" v-if="evaluate.subjective">
                             <div v-for="subjective in evaluate.subjective" :key="subjective.index" :class="[subjective.score >= 0.5 ? 'score-good' : 'score-bad']">
                                 <font-awesome-icon v-if="subjective.score >= 0.5" icon="fa-regular fa-circle-check" class="fa-circle-check"/>
                                 <font-awesome-icon v-if="subjective.score < 0.5" icon="fa-solid fa-triangle-exclamation" class="a-triangle-exclamation"/>
@@ -52,7 +52,7 @@
                 <td>
                     <label for="objective"></label>
                     <textarea v-model="objective" class="suggest" type="textarea" name="objective" />
-                    <div v-if="evaluate.objective">
+                    <div class="font-small" v-if="evaluate.objective">
                         <div v-for="objective in evaluate.objective" :key="objective.index" :class="[objective.score >= 0.5 ? 'score-good' : 'score-bad']">
                             <font-awesome-icon v-if="objective.score >= 0.5" icon="fa-regular fa-circle-check" class="fa-circle-check"/>
                             <font-awesome-icon v-if="objective.score < 0.5" icon="fa-solid fa-triangle-exclamation" class="a-triangle-exclamation"/>
@@ -67,9 +67,14 @@
                     </th>
                     <td>
                         <textarea v-model="assessment" class="suggest"  name="assessment" />
-                        <div v-if="evaluate.recommendation" >
-                            <font-awesome-icon @click="copyToClipboard(evaluate.recommendation.assessment)" icon="fa-regular fa-copy" data-bs-toggle="tooltip" data-bs-placement="top" :title="copy"/>
+                        <div class="copy-bg" v-if="evaluate.recommendation" @click="copyToClipboardAssessment(evaluate.recommendation.assessment)" >
+                            <div class="copy-msg" v-if="copyMsgShowAssessment === true">
+                                <small><font-awesome-icon icon="fa-regular fa-copy" class="pe-2" />コピーしました</small>
+                            </div>
+                            <a class="block font-small">
+                            <font-awesome-icon icon="fa-regular fa-copy" data-bs-toggle="tooltip" data-bs-placement="top" :title="copy"/>
                             {{ evaluate.recommendation.assessment }}
+                            </a>
                         </div>
                     </td>
                 </tr>
@@ -80,9 +85,14 @@
                 </th>
                 <td>
                     <textarea v-model="plan" class="suggest" name="plan" />
-                    <div v-if="evaluate.recommendation" >
-                        <font-awesome-icon @click="copyToClipboard(evaluate.recommendation.plan)" icon="fa-regular fa-copy" data-bs-toggle="tooltip" data-bs-placement="top" :title="copy"/>
+                    <div class="copy-bg" v-if="evaluate.recommendation"  data-bs-toggle="tooltip" data-bs-placement="top" :title="copy">
+                        <div class="copy-msg" v-if="copyMsgShowPlan === true">
+                            <small><font-awesome-icon icon="fa-regular fa-copy" class="pe-2" />コピーしました</small>
+                        </div>
+                        <a class="block font-small" @click="copyToClipboardPlan(evaluate.recommendation.plan)" >
+                        <font-awesome-icon icon="fa-regular fa-copy"/>
                         {{ evaluate.recommendation.plan }}
+                        </a>
                     </div>
                 </td>
                 </tr>
@@ -112,7 +122,7 @@
             </div>
           </div>
         </div>
-        <div class="col-12">
+        <div class="col-12" v-if="feedbackShow === true">
             <h2><font-awesome-icon icon="fa-solid fa-user-nurse"  class="d-inline-block me-3 fa-user-nurse" />もらったフィードバック</h2>
             <div class="border border-info rounded p-2 py-md-3 px-md-5">
                 <table class="w-100">
@@ -127,7 +137,7 @@
     </div>
     <div
       class="flash alert alert-primary position-fixed"
-      v-if="show === true"
+      v-if="flashMsgShow === true"
     >
     FBをLineで送信しました
     </div>
@@ -154,9 +164,12 @@ export default {
       assessment: '',
       plan: '',
       evaluate: '',
-      show: false,
+      flashMsgShow: false,
       isOpen: false,
       copy: 'コピーします',
+      feedbackShow: false,
+      copyMsgShowPlan: false,
+      copyMsgShowAssessment: false,
     };
   },
   methods: {
@@ -200,12 +213,34 @@ export default {
         .then((response) => (
           this.evaluate = response.data
         ));
-      this.show = true;
+      this.flashMsgShow = true;
+      this.feedbackShow = true;
     },
-    copyToClipboard(text) {
+    copyToClipboardPlan(text) {
       navigator.clipboard.writeText(text)
         .then(() => {
-          this.copy = 'コピーしました';
+          this.copyMsgShowPlan = true;
+          setTimeout(
+            () => {
+              this.copyMsgShowPlan = false;
+            },
+            2000,
+          );
+        })
+        .catch((e) => {
+          console.error(e);
+        });
+    },
+    copyToClipboardAssessment(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          this.copyMsgShowAssessment = true;
+          setTimeout(
+            () => {
+              this.copyMsgShowAssessment = false;
+            },
+            2000,
+          );
         })
         .catch((e) => {
           console.error(e);
@@ -223,7 +258,7 @@ export default {
     // setTimeoutで3000ms後にshowをfalseにする
     setTimeout(
       () => {
-        this.show = false;
+        this.flashMsgShow = false;
       },
       10000,
     );
@@ -266,6 +301,7 @@ export default {
     top: 0%;
     position: absolute;
     width: 100%;
+    animation: fadein-keyframes 2s ease 0.2s 1 forwards;
 }
 
 @keyframes open {
@@ -310,10 +346,52 @@ iframe {
 
 .score-good {
     background: aliceblue;
-
 }
 
 .score-bad {
     background: antiquewhite;
+}
+
+.copy-bg{
+    background: rgb(244, 254, 229);
+    position: relative;
+}
+.copy-bg:hover{
+    font-weight: bold;
+}
+.copy-bg:active{
+    background: rgb(220, 247, 179);
+    font-weight: bold;
+}
+
+@keyframes fadein-keyframes {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+.copy-msg {
+  padding: 4px 7px;
+  position:absolute;
+  top: 10px;
+  left: 30px;
+  min-width: 120px;
+  max-width: 100%;
+  color: #555;
+  font-weight: bold;
+  background: white;
+  animation: fadein-keyframes 2s ease 0.2s 1 forwards;
+  float: left;
+  z-index: 3;
+  border-radius: 5px;
+}
+
+.font-small {
+    font-size: small;
+    color: gray;
+    text-decoration: none;
 }
 </style>

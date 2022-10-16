@@ -5,7 +5,7 @@
 <!-- eslint-disable vuejs-accessibility/label-has-for -->
 <template>
   <div id="app">
-    <div class="container">
+    <div class="container-fluid">
       <div class="row p-5">
         <div class="col-12 col-md-7">
             <h2><font-awesome-icon icon="fa-solid fa-clipboard" class="d-inline-block me-3 fa-clipboard" />看護記録</h2>
@@ -208,11 +208,7 @@ export default {
           objective: this.objective,
           assessment: this.assessment,
           plan: this.plan,
-        })
-        // eslint-disable-next-line no-return-assign
-        .then((response) => (
-          this.evaluate = response.data
-        ));
+        });
       this.flashMsgShow = true;
       this.feedbackShow = true;
     },

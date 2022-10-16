@@ -105,7 +105,7 @@
         <div class="col-12 col-md-5 mb-5">
           <div >
             <h2><font-awesome-icon icon="fa-solid fa-file-lines" class="d-inline-block me-3 fa-file-lines" />参考</h2>
-            <div v-if="evaluate.guideline" class="accordion m-0 w-100" id="guidlineAccordion">
+            <div v-if="evaluate.guideline" class="mt-5 accordion m-0 w-100" id="guidlineAccordion">
                 <div v-for="(guideline, index) in evaluate.guideline" :key="guideline.index" class="accordion-item">
                 <h3 class="accordion-header" :id="'heading'+index">
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#collapse'+index" aria-expanded="false" :aria-controls="'collapse'+index">

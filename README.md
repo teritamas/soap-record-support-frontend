@@ -1,4 +1,7 @@
-# record-support
+ **🥈 2022年/Qiita×Algorithm Medical Hackathon 優秀賞 受賞**
+- [参考](https://zine.qiita.com/event/202302-qiita-algorithm/)
+
+# Recording Support
 
 ## Project setup
 ```
